@@ -8,7 +8,7 @@ export const profile = {
   whatsapp: "https://wa.me/963992738933",
   telegram: "https://t.me/Mouaz153",
   github: "https://github.com/MouazAlhorani",
-  linkedin: "https://www.linkedin.com/in/mouaz-alhorani/",
+  linkedin: "https://www.linkedin.com/in/mouaz-alhorani",
   cv: `${import.meta.env.BASE_URL}Mouaz_Alhorani_CV.pdf`,
   bio: "I build software that makes complex operations simpler. From Laravel applications to the infrastructure behind them, I turn everyday business challenges into dependable, production-ready systems.",
 };
