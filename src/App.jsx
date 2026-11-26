@@ -1,6 +1,9 @@
 import { Mail, Terminal, Sparkles, ArrowUpLeft, Layers, Cpu, Globe } from 'lucide-react';
 import { profile, skills, projects } from "./data/portfolioData";
 
+
+// 123
+
 export default function App() {
   return (
     <div dir="rtl" className="relative min-h-screen bg-[#070913] text-slate-100 overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
