@@ -1,176 +1,822 @@
-import { Mail, Terminal, Sparkles, ArrowUpLeft, Layers, Cpu, Globe } from 'lucide-react';
-import { profile, skills, projects } from "./data/portfolioData";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  ArrowDown,
+  Download,
+  Menu,
+  X,
+  Mail,
+  MessageCircle,
+  Send,
+  MapPin,
+  Globe2,
+  Code2,
+  Database,
+  ShieldCheck,
+  Check,
+  Copy,
+  Layers3,
+  Server,
+  Workflow,
+  ChevronDown,
+} from "lucide-react";
+import { profile, skills, projects, experience } from "./data/portfolioData";
+import "./App.css";
 
-
-// 123
-
-export default function App() {
+function Linkedin({ size = 22, ...props }) {
   return (
-    <div dir="rtl" className="relative min-h-screen bg-[#070913] text-slate-100 overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
-      
-      {/* خلفية الفقاعات المضيئة المتحركة (Floating Ambient Blobs) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob" />
-        <div className="absolute top-1/3 -left-24 w-[28rem] h-[28rem] bg-cyan-500/25 rounded-full mix-blend-screen filter blur-[110px] animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-32 right-1/3 w-[30rem] h-[30rem] bg-emerald-500/20 rounded-full mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000" />
-        {/* شبكة خفيفة في الخلفية لإعطاء طابع تقني */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      </div>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+      {...props}
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path
+        d="M7 10v7m0-10v.1M11 17v-7m0 3a3 3 0 0 1 6 0v4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function Github({ size = 22, ...props }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M9 19c-4 1-4-2-6-2m12 5v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.9A5.4 5.4 0 0 0 18.8 5 5 5 0 0 0 18.7 1S17.5.7 15 2.5a13.3 13.3 0 0 0-6 0C6.5.7 5.3 1 5.3 1A5 5 0 0 0 5.2 5a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.5V22"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
-      {/* شريط تنقل عائم (Floating Glass Pill Navbar) */}
-      <div className="sticky top-5 z-50 px-4">
-        <nav className="max-w-3xl mx-auto bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-          <a href="#" className="font-bold text-lg bg-gradient-to-l from-cyan-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-            Mouaz.dev
-          </a>
-          <div className="flex gap-6 text-sm font-medium text-slate-300">
-            <a href="#skills" className="hover:text-cyan-400 transition-colors">المهارات</a>
-            <a href="#projects" className="hover:text-cyan-400 transition-colors">المشاريع</a>
-            <a href="#contact" className="hover:text-cyan-400 transition-colors">تواصل معي</a>
+const skillIcons = { code: Code2, database: Database, shield: ShieldCheck };
+const contacts = [
+  {
+    name: "Email",
+    detail: "Start a conversation",
+    href: `mailto:${profile.email}`,
+    icon: Mail,
+  },
+  {
+    name: "LinkedIn",
+    detail: "Let’s connect",
+    href: profile.linkedin,
+    icon: Linkedin,
+  },
+  {
+    name: "WhatsApp",
+    detail: "Send me a message",
+    href: profile.whatsapp,
+    icon: MessageCircle,
+  },
+  {
+    name: "Telegram",
+    detail: "Reach out directly",
+    href: profile.telegram,
+    icon: Send,
+  },
+];
+function ProjectDialog({ project, onClose }) {
+  const dialog = useRef(null);
+  const message = `Hi Mouaz, I'd like to discuss your ${project.title} project and a potential opportunity to work together.`;
+  const discussionChannels = [
+    {
+      name: "WhatsApp",
+      detail: "Send a message about this project",
+      icon: MessageCircle,
+      href: `${profile.whatsapp}?text=${encodeURIComponent(message)}`,
+      className: "whatsapp",
+    },
+    {
+      name: "Telegram",
+      detail: "@Mouaz153",
+      icon: Send,
+      href: profile.telegram,
+      className: "telegram",
+    },
+    {
+      name: "Email",
+      detail: profile.email,
+      icon: Mail,
+      href: `mailto:${profile.email}?subject=${encodeURIComponent(`Let's talk about ${project.title}`)}&body=${encodeURIComponent(message)}`,
+      className: "email",
+    },
+  ];
+  useEffect(() => {
+    const element = dialog.current;
+    const trigger = document.activeElement;
+    element.showModal();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      element.close();
+      document.body.style.overflow = previous;
+      if (trigger instanceof HTMLElement && trigger.isConnected) {
+        trigger.focus({ preventScroll: true });
+      }
+    };
+  }, []);
+  return (
+    <dialog
+      ref={dialog}
+      className="project-dialog"
+      aria-labelledby="project-title"
+      onCancel={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="dialog-content">
+        <button
+          className="icon-button dialog-close"
+          onClick={onClose}
+          aria-label="Close project details"
+        >
+          <X size={22} />
+        </button>
+        <span className="eyebrow">
+          {project.category} / Project {project.number}
+        </span>
+        <h2 id="project-title">{project.title}</h2>
+        <p className="dialog-intro">{project.description}</p>
+        {project.details.map((detail) => (
+          <div className="detail" key={detail.title}>
+            <h3>{detail.title}</h3>
+            <p>{detail.text}</p>
           </div>
-        </nav>
-      </div>
-
-      {/* الواجهة الرئيسية (Hero Section) */}
-      <header className="relative z-10 max-w-5xl mx-auto px-6 pt-24 pb-20 text-center md:text-right">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-cyan-300 text-xs font-medium mb-6 backdrop-blur-md">
-          <Sparkles size={14} className="text-cyan-400" />
-          <span>متاح للمشاريع والاستشارات التقنية</span>
-        </div>
-
-        <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-          <span className="block text-slate-100">{profile.name.split('|')[0]}</span>
-          <span className="block text-2xl md:text-4xl mt-2 bg-gradient-to-l from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
-            {profile.role}
-          </span>
-        </h1>
-
-        <p className="text-slate-300/90 text-base md:text-lg max-w-2xl leading-relaxed mb-10 mx-auto md:mx-0">
-          {profile.bio}
-        </p>
-
-        <div className="flex flex-wrap justify-center md:justify-start gap-4">
-          <a
-            href="#projects"
-            className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-slate-950 bg-gradient-to-l from-cyan-400 to-emerald-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.45)] transition-all duration-300 hover:-translate-y-0.5"
-          >
-            <span>استكشف أعمالي</span>
-            <ArrowUpLeft size={18} className="group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </a>
-
-          <a
-            href={profile.github}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5"
-          >
-            <Terminal size={18} className="text-purple-400" />
-            <span>GitHub</span>
-          </a>
-        </div>
-      </header>
-
-      {/* قسم المهارات (Bento Glass Cards + Bubble Tags) */}
-      <section id="skills" className="relative z-10 max-w-5xl mx-auto px-6 py-20">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-            <Cpu size={22} />
-          </div>
-          <h3 className="text-2xl md:text-3xl font-bold">الترسانة التقنية</h3>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {skills.map((group, idx) => (
-            <div
-              key={idx}
-              className="group relative bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 p-7 rounded-3xl transition-all duration-300 hover:-translate-y-1 shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-5 text-cyan-300 group-hover:scale-110 transition-transform">
-                <Layers size={20} />
-              </div>
-              <h4 className="font-bold text-lg text-white mb-4">{group.category}</h4>
-              <div className="flex flex-wrap gap-2">
-                {group.items.map((skill, i) => (
-                  <span
-                    key={i}
-                    className="bg-white/[0.05] hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 text-slate-200 text-xs font-medium px-3.5 py-1.5 rounded-full transition-colors cursor-default"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
+        ))}
+        <div className="tags">
+          {project.tech.map((tech) => (
+            <span key={tech}>{tech}</span>
           ))}
         </div>
-      </section>
-
-      {/* قسم المشاريع (Modern Glass Cards with Glow Borders) */}
-      <section id="projects" className="relative z-10 max-w-5xl mx-auto px-6 py-20">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
-            <Globe size={22} />
+        <p className="privacy-note">
+          Project overview. Internal systems and source code are not publicly
+          accessible.
+        </p>
+        <details
+          className="discussion-options"
+          onToggle={(event) => {
+            if (event.currentTarget.open) {
+              event.currentTarget.scrollIntoView({ block: "nearest" });
+            }
+          }}
+        >
+          <summary className="button button-dark">
+            Discuss this work <ChevronDown size={17} />
+          </summary>
+          <div className="discussion-panel">
+            <p>
+              Let’s connect<span>Choose the way that works for you.</span>
+            </p>
+            <div className="discussion-channels">
+              {discussionChannels.map((channel) => (
+                <a
+                  key={channel.name}
+                  className={`discussion-channel ${channel.className}`}
+                  href={channel.href}
+                  target={channel.name === "Email" ? undefined : "_blank"}
+                  rel={
+                    channel.name === "Email" ? undefined : "noopener noreferrer"
+                  }
+                >
+                  <span className="discussion-icon">
+                    <channel.icon size={20} strokeWidth={1.6} />
+                  </span>
+                  <span className="discussion-label">
+                    <strong>{channel.name}</strong>
+                    <small>{channel.detail}</small>
+                  </span>
+                  <ArrowUpRight size={16} />
+                </a>
+              ))}
+            </div>
           </div>
-          <h3 className="text-2xl md:text-3xl font-bold">أبرز المشاريع والأنظمة</h3>
+        </details>
+      </div>
+    </dialog>
+  );
+}
+function AmbientLights({ local = false }) {
+  return (
+    <div
+      className={local ? "visual-particles" : "ambient-lights"}
+      aria-hidden="true"
+    >
+      {Array.from({ length: local ? 18 : 30 }, (_, i) => (
+        <i
+          key={i}
+          style={{
+            "--x": `${(i * 37 + 7) % 97}%`,
+            "--y": `${(i * 53 + 11) % 94}%`,
+            "--delay": `${-(i % 7) * 1.7}s`,
+            "--duration": `${7 + (i % 5) * 2}s`,
+            "--size": `${i % 5 === 0 ? 3 : 2}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+function PlatformVisual({ onExplore }) {
+  const surface = useRef(null);
+  function moveSpotlight(event) {
+    if (event.pointerType === "touch") return;
+    const box = event.currentTarget.getBoundingClientRect();
+    surface.current.style.setProperty(
+      "--pointer-x",
+      `${event.clientX - box.left}px`,
+    );
+    surface.current.style.setProperty(
+      "--pointer-y",
+      `${event.clientY - box.top}px`,
+    );
+  }
+  const nodes = [
+    {
+      position: "report",
+      icon: Database,
+      title: "Connected data",
+      detail: "SQL + MongoDB",
+      project: 0,
+    },
+    {
+      position: "secure",
+      icon: ShieldCheck,
+      title: "Secure by design",
+      detail: "30+ access roles",
+      project: 0,
+    },
+    {
+      position: "workflow",
+      icon: Workflow,
+      title: "Less busywork",
+      detail: "20+ automated jobs",
+      project: 0,
+    },
+    {
+      position: "infra",
+      icon: Server,
+      title: "Built to keep running",
+      detail: "30+ monitored VMs",
+      project: 1,
+    },
+  ];
+  return (
+    <div
+      ref={surface}
+      className="platform-visual"
+      onPointerMove={moveSpotlight}
+      role="group"
+      aria-label="Explore the SHAMS platform: connected data, security, automation, and infrastructure"
+    >
+      <AmbientLights local />
+      <div className="visual-spotlight" aria-hidden="true" />
+      <div className="visual-topline">
+        <span>
+          <i /> SYSTEMS, IN SYNC
+        </span>
+        <span>SHAMS / 01</span>
+      </div>
+      <div className="orbit orbit-one" aria-hidden="true" />
+      <div className="orbit orbit-two" aria-hidden="true" />
+      <svg
+        className="node-connections"
+        viewBox="0 0 540 480"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d="M115 110 Q155 215 270 240 M440 145 Q350 155 270 240 M110 355 Q200 330 270 240 M420 365 Q350 330 270 240" />
+      </svg>
+      {nodes.map((node) => (
+        <div
+          key={node.position}
+          className={`floating-node node-${node.position}`}
+        >
+          <button
+            className="visual-label"
+            onClick={() => onExplore(projects[node.project])}
+            aria-label={`Explore ${node.title}: ${node.detail}`}
+          >
+            <span className="node-icon">
+              <node.icon size={19} strokeWidth={1.5} />
+            </span>
+            <span>
+              {node.title}
+              <small>{node.detail}</small>
+            </span>
+            <span className="node-indicator" aria-hidden="true" />
+          </button>
         </div>
-
-        <div className="grid md:grid-cols-2 gap-7">
-          {projects.map((project, idx) => (
-            <div
-              key={idx}
-              className="group relative bg-gradient-to-b from-white/[0.06] to-white/[0.02] backdrop-blur-xl border border-white/10 hover:border-purple-400/40 p-8 rounded-3xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(168,85,247,0.12)]"
+      ))}
+      <div className="core-position">
+        <div className="core-float">
+          <button
+            className="platform-core"
+            onClick={() => onExplore(projects[0])}
+            aria-label="Explore the SHAMS enterprise banking platform"
+          >
+            <span className="core-symbol">
+              <Layers3 size={36} strokeWidth={1.2} />
+            </span>
+            <strong>SHAMS</strong>
+            <span>Enterprise banking platform</span>
+            <div className="core-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          </button>
+        </div>
+      </div>
+      <div className="visual-bottom">
+        <span>
+          <span className="status-dot" /> Designed. Built. Deployed.
+        </span>
+        <span className="visual-hint">
+          EXPLORE THE NODES <ArrowUpRight size={13} />
+        </span>
+      </div>
+    </div>
+  );
+}
+export default function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeProject, setActiveProject] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const copyTimer = useRef(null);
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText(profile.email);
+      setCopied(true);
+      setCopyError(false);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopyError(true);
+    }
+  }
+  return (
+    <>
+      <AmbientLights />
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      <header className="site-header">
+        <nav className="nav container" aria-label="Main navigation">
+          <a className="wordmark" href="#home" aria-label="Mouaz Alhorani home">
+            mouaz<span className="wordmark-dot">.</span>
+            <span className="wordmark-caption">DEVELOPER & BUILDER</span>
+          </a>
+          <div
+            className={`nav-links ${menuOpen ? "is-open" : ""}`}
+            id="navigation"
+          >
+            {[
+              ["work", "Selected work"],
+              ["about", "About"],
+              ["experience", "Experience"],
+            ].map(([id, label]) => (
+              <a key={id} href={`#${id}`} onClick={() => setMenuOpen(false)}>
+                {label}
+              </a>
+            ))}
+            <a
+              href="#contact"
+              className="nav-contact"
+              onClick={() => setMenuOpen(false)}
             >
+              Let’s talk <ArrowUpRight size={16} />
+            </a>
+          </div>
+          <button
+            className="icon-button menu-toggle"
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={menuOpen}
+            aria-controls="navigation"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X /> : <Menu />}
+          </button>
+        </nav>
+      </header>
+      <main id="main">
+        <section className="hero container" id="home">
+          <div className="hero-copy">
+            <div className="availability">
+              <span className="status-dot" /> Open to remote & relocation
+              opportunities
+            </div>
+            <p className="intro">
+              Hi, I’m Mouaz Alhorani <span className="intro-line" />
+            </p>
+            <h1>
+              Complex systems.
+              <br />
+              Simple experiences.
+              <br />
+              <span>Real impact.</span>
+            </h1>
+            <p className="hero-description">
+              Full-stack developer turning complex banking operations into
+              software that people rely on. Built from the first line of code to
+              production.
+            </p>
+            <div className="hero-actions">
+              <a className="button button-dark" href="#work">
+                Explore my work <ArrowUpRight size={18} />
+              </a>
+              <a
+                className="button button-outline"
+                href={profile.cv}
+                download="Mouaz_Alhorani_CV.pdf"
+              >
+                Download CV <Download size={17} />
+              </a>
+            </div>
+            <div className="hero-footnote">
+              <MapPin size={14} /> Based in Syria <span /> Building for teams
+              everywhere
+            </div>
+          </div>
+          <PlatformVisual onExplore={setActiveProject} />
+          <a href="#impact" className="scroll-cue">
+            <ArrowDown size={14} /> A little less talk. A little more impact.
+          </a>
+        </section>
+        <section
+          className="impact container"
+          id="impact"
+          aria-label="SHAMS platform impact"
+        >
+          <div className="impact-intro">
+            <span className="eyebrow">SOFTWARE IN ACTION</span>
+            <p>
+              Built for people.
+              <br />
+              Proven in production.
+            </p>
+          </div>
+          {[
+            ["200+", "Staff using SHAMS"],
+            ["19", "Bank branches connected"],
+            ["33k+", "Reports generated", "Over 14 months"],
+            ["2+ hrs", "Manual work saved daily", "Estimated"],
+          ].map(([value, label, note]) => (
+            <div className="metric" key={label}>
+              <strong>{value}</strong>
+              <span>{label}</span>
+              <small>{note || "\u00a0"}</small>
+            </div>
+          ))}
+        </section>
+        <section className="work-section section-pad" id="work">
+          <div className="container">
+            <div className="section-heading">
               <div>
-                <div className="flex justify-between items-start gap-4 mb-4">
-                  <h4 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
-                    {project.title}
-                  </h4>
-                  <a
-                    href={project.demo || project.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2 rounded-full bg-white/[0.05] hover:bg-cyan-500/20 border border-white/10 text-slate-300 hover:text-cyan-300 transition"
-                    title="معاينة"
+                <span className="eyebrow">01 / SELECTED WORK</span>
+                <h2>
+                  From challenge
+                  <br />
+                  to working system<span className="accent-dot">.</span>
+                </h2>
+              </div>
+              <p>
+                A closer look at the platforms, infrastructure,
+                <br className="desktop-break" /> and applications I’ve built.
+              </p>
+            </div>
+            <div className="projects-grid">
+              {projects.map((project, index) => (
+                <article
+                  key={project.id}
+                  className={`project-card project-${project.id}`}
+                >
+                  <button
+                    className="project-art"
+                    onClick={() => setActiveProject(project)}
+                    aria-label={`Explore ${project.title}`}
                   >
-                    <ArrowUpLeft size={18} />
-                  </a>
+                    <div className="art-top">
+                      <span>
+                        {index === 0
+                          ? "SHAMS / ENTERPRISE"
+                          : index === 1
+                            ? "SYSTEMS / INFRASTRUCTURE"
+                            : "FLUTTER / CROSS-PLATFORM"}
+                      </span>
+                      <ArrowUpRight size={19} />
+                    </div>
+                    {index === 0 ? (
+                      <div className="shams-art">
+                        <div className="mini-sidebar">
+                          <Layers3 size={19} />
+                          <i />
+                          <i />
+                          <i />
+                          <i />
+                        </div>
+                        <div className="mini-dashboard">
+                          <div className="mini-dashboard-heading">
+                            A clearer view.<span>One connected platform.</span>
+                          </div>
+                          <div className="mini-stats">
+                            <div>
+                              <small>PEOPLE</small>
+                              <b>200+</b>
+                            </div>
+                            <div>
+                              <small>BRANCHES</small>
+                              <b>19</b>
+                            </div>
+                            <div>
+                              <small>ROLES</small>
+                              <b>30+</b>
+                            </div>
+                          </div>
+                          <div className="mini-chart" aria-hidden="true">
+                            {[
+                              32, 48, 39, 62, 50, 72, 58, 82, 68, 91, 80, 100,
+                            ].map((height, i) => (
+                              <i key={i} style={{ height: `${height}%` }} />
+                            ))}
+                          </div>
+                          <span className="art-caption">
+                            PLATFORM OVERVIEW · ILLUSTRATIVE VISUAL
+                          </span>
+                        </div>
+                      </div>
+                    ) : index === 1 ? (
+                      <div className="server-art">
+                        <div className="server-stack">
+                          {[0, 1, 2].map((n) => (
+                            <div key={n}>
+                              <Server size={22} />
+                              <span />
+                              <i />
+                              <i />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="server-caption">
+                          <span className="status-dot" /> Monitor. Recover. Keep
+                          running.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="devices-art">
+                        <div className="desktop-device">
+                          <ShieldCheck size={34} strokeWidth={1.3} />
+                          <span>Secure by design</span>
+                          <div className="device-line" />
+                          <div className="device-line short" />
+                        </div>
+                        <div className="phone-device">
+                          <div className="phone-notch" />
+                          <ShieldCheck size={27} strokeWidth={1.3} />
+                          <span>Protected.</span>
+                          <div className="phone-button" />
+                        </div>
+                        <span className="device-caption">
+                          ANDROID + WINDOWS
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                  <div className="project-copy">
+                    <div className="project-meta">
+                      <span>{project.category}</span>
+                      <span>/{project.number}</span>
+                    </div>
+                    <h3>{project.title}</h3>
+                    <p>{project.description}</p>
+                    <div className="project-outcome">
+                      <span />
+                      {project.outcome}
+                    </div>
+                    <div className="tags">
+                      {project.tech.map((tech) => (
+                        <span key={tech}>{tech}</span>
+                      ))}
+                    </div>
+                    <button
+                      className="text-link"
+                      onClick={() => setActiveProject(project)}
+                    >
+                      Explore project <ArrowUpRight size={17} />
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p className="work-note">
+              <ShieldCheck size={14} /> Banking work is internal. These
+              overviews share the approach and impact, without exposing private
+              systems.
+            </p>
+          </div>
+        </section>
+        <section id="about" className="about-section section-pad container">
+          <div className="about-intro">
+            <div>
+              <span className="eyebrow">02 / THE PERSON BEHIND THE CODE</span>
+              <h2>
+                I connect the dots.
+                <br />
+                Then build the system<span className="accent-dot">.</span>
+              </h2>
+            </div>
+            <div className="about-copy">
+              <p>{profile.bio}</p>
+              <p>
+                My background in systems operations means I think beyond
+                features: how a system is deployed, how it’s monitored, and how
+                it recovers when something goes wrong.
+              </p>
+              <div className="about-facts">
+                <span>
+                  <Globe2 size={16} /> Arabic · English (Good)
+                </span>
+                <a
+                  href={profile.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github size={16} /> Find me on GitHub{" "}
+                  <ArrowUpRight size={14} />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="skills-grid">
+            {skills.map((group) => {
+              const Icon = skillIcons[group.icon];
+              return (
+                <div className="skill-group" key={group.category}>
+                  <Icon size={25} strokeWidth={1.5} />
+                  <h3>{group.category}</h3>
+                  <p>{group.description}</p>
+                  <div className="tags">
+                    {group.items.map((skill) => (
+                      <span key={skill}>{skill}</span>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-slate-300/80 text-sm leading-relaxed mb-6">
-                  {project.description}
+              );
+            })}
+          </div>
+        </section>
+        <section id="experience" className="experience-section section-pad">
+          <div className="container experience-layout">
+            <div className="experience-heading">
+              <span className="eyebrow">03 / EXPERIENCE</span>
+              <h2>
+                A foundation
+                <br />
+                built in the field<span className="accent-dot">.</span>
+              </h2>
+              <p>
+                From technical operations to building enterprise software. Every
+                role adds another layer.
+              </p>
+              <a
+                href={profile.cv}
+                download="Mouaz_Alhorani_CV.pdf"
+                className="text-link"
+              >
+                Get the full CV <Download size={17} />
+              </a>
+            </div>
+            <div className="timeline">
+              {experience.map((job) => (
+                <article
+                  key={job.role}
+                  className={`timeline-item ${job.current ? "current" : ""}`}
+                >
+                  <span className="timeline-dot" />
+                  <div className="job-period">
+                    {job.period}
+                    {job.current && <span>Current</span>}
+                  </div>
+                  <h3>{job.role}</h3>
+                  <div className="job-company">{job.company}</div>
+                  <p>{job.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section id="contact" className="contact-section">
+          <div className="container">
+            <div className="contact-top">
+              <div>
+                <div className="availability">
+                  <span className="status-dot" /> Open to the right opportunity
+                </div>
+                <h2>
+                  Good work starts
+                  <br />
+                  with a conversation<span>.</span>
+                </h2>
+                <p>
+                  Looking for a developer who can build it, connect it,
+                  <br className="desktop-break" /> and keep it running? Let’s
+                  talk.
                 </p>
               </div>
-
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-                {project.tech.map((t, i) => (
-                  <span
-                    key={i}
-                    className="text-xs font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/20 px-3 py-1 rounded-full"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
+              <a
+                className="contact-arrow"
+                href={`mailto:${profile.email}`}
+                aria-label="Email Mouaz"
+              >
+                <ArrowUpRight size={66} strokeWidth={1.2} />
+              </a>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* قسم التواصل (Floating Glass Banner) */}
-      <footer id="contact" className="relative z-10 max-w-4xl mx-auto px-6 py-20">
-        <div className="relative overflow-hidden bg-gradient-to-l from-cyan-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur-2xl border border-white/15 rounded-[2.5rem] p-10 md:p-14 text-center">
-          <h3 className="text-2xl md:text-4xl font-bold mb-4">لنبنِ شيئاً استثنائياً معاً</h3>
-          <p className="text-slate-300 max-w-lg mx-auto mb-8 text-sm md:text-base">
-            سواء كنت تبحث عن بناء نظام مؤسسي متكامل، تطبيق موبايل، أو تصميم بنية خوادم عالية التوافر، يسعدني تواصلك.
-          </p>
-          <a
-            href={`mailto:${profile.email}`}
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-slate-950 bg-white hover:bg-cyan-300 transition-all duration-300 shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:scale-105"
-          >
-            <Mail size={20} />
-            <span>{profile.email}</span>
-          </a>
-        </div>
+            <div className="contact-grid">
+              {contacts.map((contact) => (
+                <a
+                  key={contact.name}
+                  href={contact.href}
+                  target={contact.name === "Email" ? undefined : "_blank"}
+                  rel={
+                    contact.name === "Email" ? undefined : "noopener noreferrer"
+                  }
+                >
+                  <contact.icon size={22} strokeWidth={1.5} />
+                  <div>
+                    <strong>{contact.name}</strong>
+                    <span>{contact.detail}</span>
+                  </div>
+                  <ArrowUpRight className="contact-link-arrow" size={19} />
+                </a>
+              ))}
+            </div>
+            <div className="email-row">
+              <a href={`mailto:${profile.email}`}>{profile.email}</a>
+              <button
+                className="icon-button"
+                onClick={copyEmail}
+                aria-label="Copy email address"
+              >
+                {copied ? <Check size={17} /> : <Copy size={17} />}
+              </button>
+              <span role="status">
+                {copied
+                  ? "Email copied!"
+                  : copyError
+                    ? "Please copy the email address above."
+                    : ""}
+              </span>
+            </div>
+            <div className="contact-availability">
+              <span>
+                <Globe2 size={15} /> Remote worldwide
+              </span>
+              <span>
+                <MapPin size={15} /> Open to relocation
+              </span>
+              <a href={profile.cv} download="Mouaz_Alhorani_CV.pdf">
+                Download CV <Download size={15} />
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer className="site-footer container">
+        <a className="wordmark" href="#home">
+          mouaz<span className="wordmark-dot">.</span>
+        </a>
+        <p>© {new Date().getFullYear()} Mouaz Alhorani. Built with care.</p>
+        <a href="#home">
+          Back to top <ArrowRight size={15} className="back-arrow" />
+        </a>
       </footer>
-    </div>
+      {activeProject && (
+        <ProjectDialog
+          project={activeProject}
+          onClose={() => setActiveProject(null)}
+        />
+      )}
+    </>
   );
 }
