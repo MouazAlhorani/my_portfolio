@@ -1,5 +1,5 @@
 import { Mail, Terminal, Sparkles, ArrowUpLeft, Layers, Cpu, Globe } from 'lucide-react';
-import { profile, skills, projects } from './data/portfoliodata';
+import { profile, skills, projects } from "./data/portfolioData";
 
 export default function App() {
   return (
